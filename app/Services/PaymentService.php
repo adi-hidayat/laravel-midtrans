@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Http;
 use Exception;
 use stdClass;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 /**
  * Handle bank transfer transaction
@@ -37,11 +38,12 @@ class PaymentService implements Payment
 
             return $response;
         
-        } catch (Exception $e) {
+        } catch (HttpException $e) {
 
             $error = new stdClass;
             $error->error = true;
             $error->error_message = $e->getMessage();
+            
             return $error;
         
         }
