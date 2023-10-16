@@ -12,6 +12,13 @@ interface Payment
     public function chargePayment(object $transaction) : object; 
 
     /**
+     * @param object $transaction
+     * 
+     * @return object
+     */
+    public function getCreditCardToken(object $transaction) : object;
+
+    /**
      * @return object
      */
     public function notifyPayment() : object;

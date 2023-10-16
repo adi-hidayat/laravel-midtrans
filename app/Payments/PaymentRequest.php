@@ -3,6 +3,7 @@
 namespace App\Payments;
 
 use App\Payments\Types\BankTransfer;
+use App\Payments\Types\CreditCard;
 use App\Payments\Types\Ewallet;
 use stdClass;
 
@@ -31,12 +32,16 @@ class PaymentRequest {
                 $payment = new BankTransfer($this->order);
                 $paymentDetails = $payment->requestPaymentDetails();
                 break;
+
+            case 'CREDIT_CARD' : 
+                $payment = new CreditCard($this->order);
+                $paymentDetails = $payment->requestPaymentDetails();
+                break;
+
             case 'EWALLET' :
                 $payment = new Ewallet($this->order);
                 $paymentDetails = $payment->requestPaymentDetails();
                 break;
-
-           
         }
 
         return $paymentDetails;
