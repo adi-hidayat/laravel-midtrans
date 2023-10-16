@@ -29,22 +29,46 @@ class PaymentService implements Payment
     /**
      * @var string
      */
+    private string $captureEndpoint;
+
+    /**
+     * @var string
+     */
+    private string $cancelEndpoint;
+
+    /**
+     * @var string
+     */
+    private string $expireEndpoint;
+
+    /**
+     * @var string
+     */
+    private string $refundEndpoint;
+
+    /**
+     * @var string
+     */
     private string $getTokenEndpoint;
 
     /**
      */
     public function __construct()
     {
-        $this->serverKey = Config::get('midtrans.auth.server_key');
-
-        $this->chargeEndpoint = Config::get('midtrans.endpoints.core.charge');
-
+        $this->serverKey        = Config::get('midtrans.auth.server_key');
+        $this->chargeEndpoint   = Config::get('midtrans.endpoints.core.charge');
+        $this->captureEndpoint  = Config::get('midtrans.endpoints.core.capture'); 
+        $this->cancelEndpoint   = Config::get('midtrans.endpoints.core.cancel'); 
+        $this->expireEndpoint   = Config::get('midtrans.endpoints.core.expire'); 
+        $this->refundEndpoint   = Config::get('midtrans.endpoints.core.refund'); 
         $this->getTokenEndpoint = Config::get('midtrans.endpoints.core.token');
     }
     /**
      * @param object $order
      * 
-     * Charge or proccess transaction
+     * Charge transaction or payment
+     * 
+     * https://docs.midtrans.com/reference/charge-transactions-1
      * 
      * @return object
      */
@@ -53,7 +77,7 @@ class PaymentService implements Payment
         $paymentRequest = new PaymentRequest($order);
         $payload = $paymentRequest->requestPaymentDetails();
 
-        try {
+        try {0
 
             $response = Http::withBasicAuth($this->serverKey, '')
                             ->withHeader('Content-type', 'application/json')
@@ -73,9 +97,150 @@ class PaymentService implements Payment
     }
 
     /**
+     * @param object $payment
+     * 
+     * Capture transaction is triggered to capture the transaction balance when transaction_status:authorize. 
+     * This is only available after Pre-Authorized Credit Card or Pre-Authorized GoPay.
+     * 
+     * https://docs.midtrans.com/reference/capture-transaction
+     * 
+     * @return object
+     */
+    public function capturePayment(object $payment): object
+    {
+        $payload = collect($payment)->mapWithKeys(function ($value, $key) {
+            return [Str::snake($key) => $value];
+        })->all();
+        
+        try {
+
+            $response = Http::withBasicAuth($this->serverKey, '')
+                            ->withHeader('Content-type', 'application/json')
+                            ->withHeader('accept', 'application/json')
+                            ->post($this->captureEndpoint, $payload);
+
+            return $response;
+
+        } catch (HttpException $e) {
+
+            $error = new stdClass;
+            $error->error = true;
+            $error->error_message = $e->getMessage();
+            
+            return $error;
+        }
+    }
+
+    /**
+     * @param object $payment
+     * 
+     * Card payment can be voided with Cancel method if the transaction has not been settled. 
+     * The time interval during which the pre-authorized transaction can be cancelled depends on the Acquiring Bank.
+     * 
+     * https://docs.midtrans.com/reference/cancel-transaction
+     * 
+     * @return object
+     */
+    public function cancelPayment(object $payment): object
+    {
+        $this->cancelEndpoint = Str::replace('{transactionId_or_orderId}', $payment->orderId, $this->cancelEndpoint);
+
+        try {
+
+            $response = Http::withBasicAuth($this->serverKey, '')
+                            ->withHeader('accept', 'application/json')
+                            ->post($this->cancelEndpoint);
+            
+            return $response;
+
+        } catch (HttpException $e) {
+            
+            $error = new stdClass;
+            $error->error = true;
+            $error->error_message = $e->getMessage();
+            
+            return $error;
+        
+        }
+    }
+
+    /**
+     * @param object $payment
+     * 
+     * Expire transaction is triggered to update the transaction_status to expire, when the customer fails to complete the payment. 
+     * The expired order_id can be reused for the same or different payment methods.
+     * 
+     * https://docs.midtrans.com/reference/expire-transaction
+     * 
+     * @return object
+     */
+    public function expirePayment(object $payment): object
+    {
+        $this->expireEndpoint = Str::replace('{transactionId_or_orderId}', $payment->orderId, $this->expireEndpoint);
+
+        try {
+
+            $response = Http::withBasicAuth($this->serverKey, '')
+                            ->withHeader('accept', 'application/json')
+                            ->post($this->expireEndpoint);
+            
+            return $response;
+
+        } catch (HttpException $e) {
+            
+            $error = new stdClass;
+            $error->error = true;
+            $error->error_message = $e->getMessage();
+            
+            return $error;
+        
+        }
+    }
+
+    /**
+     * @param object $order
+     * 
+     * Refund transaction is called to reverse the money back to customers for transactions with payment status Settlement. 
+     * If transaction's status is still Pending Authorize or Capture please use Cancel API instead. The same refund_id cannot be reused.
+     * 
+     * Refund transaction is supported only for credit_card , gopay, shopeepay and QRIS payment methods.
+     * 
+     * With Refund, refund request is made to Midtrans where Midtrans will then forward it to payment providers.
+     * 
+     * https://docs.midtrans.com/reference/refund-transaction
+     * 
+     * @return object
+     */
+    public function refundPayment(object $payment) : object
+    {
+        $this->refundEndpoint = Str::replace('{transactionId_or_orderId}', $payment->orderId, $this->refundEndpoint);
+
+        try {
+
+            $response = Http::withBasicAuth($this->serverKey, '')
+                            ->withHeader('accept', 'application/json')
+                            ->post($this->refundEndpoint);
+            
+            return $response;
+
+        } catch (HttpException $e) {
+            
+            $error = new stdClass;
+            $error->error = true;
+            $error->error_message = $e->getMessage();
+            
+            return $error;
+        
+        }
+    }
+
+    /**
      * @param object $transaction
      * 
-     * Get credit card token for charge credit card
+     * Token ID is a unique value that is associated with the customer’s credit card information during a transaction. 
+     * The GET Token method sends the credit card information via Midtrans.min.js to Midtrans server and returns the Token ID to you.
+     * 
+     * https://docs.midtrans.com/reference/get-token
      * 
      * @return object
      */
@@ -109,18 +274,6 @@ class PaymentService implements Payment
      * @return object
      */
     public function notifyPayment(): object
-    {
-        return new stdClass;
-    }
-
-    /**
-     * @param object $order
-     * 
-     * Refund payment
-     * 
-     * @return object
-     */
-    public function refundPayment(object $order) : object
     {
         return new stdClass;
     }

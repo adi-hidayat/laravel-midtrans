@@ -119,7 +119,7 @@ class CreditCard
             "customer_details"      => $this->customerDetails,
             $this->paymentMethod    => [
                     'token_id'      => $this->tokenId,
-                    'authentication'=> true
+                    'type'          => 'authorize'
             ]
         ];
         

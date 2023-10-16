@@ -60,12 +60,33 @@ class CreditCardTest extends TestCase
         $order = $this->getOrder('CREDIT_CARD', $response['token_id']);
         $result = $this->paymentService->chargePayment($order);
         $response = $result->json();
-
-        $statusCode = 201 == $response['status_code'];
+        
+        $statusCode = 200 == $response['status_code'];
         $statusMessage = 'Success, Credit Card transaction is successful' == $response['status_message'];
 
         self::assertTrue($statusCode);
         self::assertTrue($statusMessage);
+    }
+
+    public function testCaptureCreditCard()
+    {
+        $payment = new stdClass;
+        $payment->transaction_id = "77d7a5c9-2817-48ce-9b09-387337b84835";
+        $payment->gross_amount = 57000000;
+        $result = $this->paymentService->capturePayment($payment);
+        $response = $result->json();
+
+        $statusCode = 200 == $response['status_code'];
+        $statusMessage = 'Success, Credit Card capture transaction is successful' == $response['status_message'];
+
+        self::assertTrue($statusCode);
+        self::assertTrue($statusMessage);
+    }
+
+    public function testCancelCreditCardSuccess()
+    {
+        $payment = new stdClass;
+        $this->paymentService->cancelPayment($payment);
     }
 
     /**
@@ -120,5 +141,20 @@ class CreditCardTest extends TestCase
         $order->createdAt = date('Y-m-d H:i:s');
 
         return $order;
+    }
+
+    public function testCancelPaymentCreditCardSuccess()
+    {
+        $payment = new stdClass;
+        $payment->orderId = '78cfea79-f7a6-4c71-a268-649a52afe428';
+        $result = $this->paymentService->cancelPayment($payment);
+        $response = $result->json();
+
+        $statusCode = 200 == $response['status_code'];
+        $statusMessage = 'Success, transaction is canceled' == $response['status_message'];
+
+        self::assertTrue($statusCode);
+        self::assertTrue($statusMessage);
+
     }
 }

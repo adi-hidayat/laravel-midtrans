@@ -12,6 +12,34 @@ interface Payment
     public function chargePayment(object $transaction) : object; 
 
     /**
+     * @param object $payment
+     * 
+     * @return object
+     */
+    public function capturePayment(object $payment) : object;
+
+    /**
+     * @param object $payment
+     * 
+     * @return object
+     */
+    public function cancelPayment(object $payment) : object;
+
+    /**
+     * @param object $payment
+     * 
+     * @return object
+     */
+    public function expirePayment(object $payment) : object;
+
+    /**
+     * @param object $transaction
+     * 
+     * @return object
+     */
+    public function refundPayment(object $transaction) : object;
+
+    /**
      * @param object $transaction
      * 
      * @return object
@@ -22,11 +50,4 @@ interface Payment
      * @return object
      */
     public function notifyPayment() : object;
-
-    /**
-     * @param object $transaction
-     * 
-     * @return object
-     */
-    public function refundPayment(object $transaction) : object;
 }

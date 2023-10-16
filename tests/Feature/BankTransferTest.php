@@ -126,4 +126,19 @@ class BankTransferTest extends TestCase
         $messageMessage = 'Success, PERMATA VA transaction is successful' == $result['status_message'];
         assertTrue($messageMessage);
     }
+
+    public function testCancelPaymentBankTransferSuccess()
+    {
+        $payment = new stdClass;
+        $payment->orderId = '78cfea79-f7a6-4c71-a268-649a52afe428';
+        $result = $this->paymentService->cancelPayment($payment);
+        $response = $result->json();
+
+        $statusCode = 200 == $response['status_code'];
+        $statusMessage = 'Success, transaction is canceled' == $response['status_message'];
+
+        self::assertTrue($statusCode);
+        self::assertTrue($statusMessage);
+
+    }
 }
