@@ -29,6 +29,52 @@ class BankTransferTest extends TestCase
     }
 
     /**
+     * @return void
+     */
+    public function testVirtucalAccountSuccess() : void
+    {
+        
+        $result = $this->paymentService->chargePayment($this->getOrder('BANK_TRANSFER', 'VIRTUAL_ACCOUNT', 'BCA'));
+        $result = $result->json();
+
+        $statusCodeSuccess = 201 == $result['status_code'];
+        assertTrue($statusCodeSuccess);
+
+        $messageMessage = 'Success, Bank Transfer transaction is created' == $result['status_message'];
+        assertTrue($messageMessage);
+    }
+
+    /**
+     * @return void
+     */
+    public function testEchannelSuccess() : void
+    {
+        $result = $this->paymentService->chargePayment($this->getOrder('BANK_TRANSFER', 'ECHANNEL', 'MANDIRI'));
+        $result = $result->json();
+        
+        $statusCodeSuccess = 201 == $result['status_code'];
+        assertTrue($statusCodeSuccess);
+
+        $messageMessage = 'OK, Mandiri Bill transaction is successful' == $result['status_message'];
+        assertTrue($messageMessage);
+    }
+
+    /**
+     * @return void
+     */
+    public function testPermataSuccess() : void
+    {
+        $result = $this->paymentService->chargePayment($this->getOrder('BANK_TRANSFER'));
+        $result = $result->json();
+
+        $statusCodeSuccess = 201 == $result['status_code'];
+        assertTrue($statusCodeSuccess);
+
+        $messageMessage = 'Success, PERMATA VA transaction is successful' == $result['status_message'];
+        assertTrue($messageMessage);
+    }
+
+    /**
      * @param mixed $paymentMethod
      * @param mixed $paymentType
      * @param mixed $paymentBeneficiary
@@ -79,51 +125,5 @@ class BankTransferTest extends TestCase
         $order->createdAt = date('Y-m-d H:i:s');
 
         return $order;
-    }
-
-    /**
-     * @return void
-     */
-    public function testVirtucalAccountSuccess() : void
-    {
-        
-        $result = $this->paymentService->chargePayment($this->getOrder('BANK_TRANSFER', 'VIRTUAL_ACCOUNT', 'BCA'));
-        $result = $result->json();
-
-        $statusCodeSuccess = 201 == $result['status_code'];
-        assertTrue($statusCodeSuccess);
-
-        $messageMessage = 'Success, Bank Transfer transaction is created' == $result['status_message'];
-        assertTrue($messageMessage);
-    }
-
-    /**
-     * @return void
-     */
-    public function testEchannelSuccess() : void
-    {
-        $result = $this->paymentService->chargePayment($this->getOrder('BANK_TRANSFER', 'ECHANNEL', 'MANDIRI'));
-        $result = $result->json();
-        
-        $statusCodeSuccess = 201 == $result['status_code'];
-        assertTrue($statusCodeSuccess);
-
-        $messageMessage = 'OK, Mandiri Bill transaction is successful' == $result['status_message'];
-        assertTrue($messageMessage);
-    }
-
-    /**
-     * @return void
-     */
-    public function testPermataSuccess() : void
-    {
-        $result = $this->paymentService->chargePayment($this->getOrder('BANK_TRANSFER'));
-        $result = $result->json();
-
-        $statusCodeSuccess = 201 == $result['status_code'];
-        assertTrue($statusCodeSuccess);
-
-        $messageMessage = 'Success, PERMATA VA transaction is successful' == $result['status_message'];
-        assertTrue($messageMessage);
     }
 }

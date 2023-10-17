@@ -82,7 +82,7 @@ class PaymentService implements Payment
     {
         $paymentRequest = new PaymentRequest($order);
         $payload = $paymentRequest->requestPaymentDetails();
-
+        
         try {
 
             $response = Http::withBasicAuth($this->serverKey, '')

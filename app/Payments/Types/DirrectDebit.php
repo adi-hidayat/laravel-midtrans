@@ -2,7 +2,7 @@
 
 namespace App\Payments\Types;
 
-class OverTheCounter
+class DirrectDebit
 {
     /**
      * @var object
@@ -12,12 +12,17 @@ class OverTheCounter
     /**
      * @var string
      */
-    protected string $paymentType; // CONVENIENCE_STORE
+    protected string $paymentMethod;
 
     /**
      * @var string
      */
-    protected string $paymentBeneficiary; // INDOMART / ALFAMART
+    protected string $paymentType;
+
+    /**
+     * @var string
+     */
+    protected string $paymentBeneficiary;
 
     /**
      * @var array
@@ -37,7 +42,7 @@ class OverTheCounter
     /**
      * @var array
      */
-    protected array $paymentTypeParams;
+    protected array $paymentTypeDetails;
 
     /**
      * @param object $orderDetail
@@ -46,12 +51,23 @@ class OverTheCounter
     {
         $this->orderDetail = $orderDetail;
 
+        self::setPaymentMethod($this->orderDetail);
         self::setPaymentType($this->orderDetail);
         self::setPaymentBeneficiary($this->orderDetail);
         self::setTransactionDetails($this->orderDetail);
         self::setItemDetails($this->orderDetail);
         self::setCustomerDetails($this->orderDetail);
-        self::setpaymentTypeParams($this->orderDetail);
+        self::setPaymentTypeDetails($this->orderDetail);
+    }
+
+    /**
+     * @param mixed $order
+     * 
+     * @return void
+     */
+    public function setPaymentMethod($order) : void
+    {
+        $this->paymentMethod = strtolower($order->paymentMethod);
     }
 
     /**
@@ -111,19 +127,15 @@ class OverTheCounter
         ];
     }
 
-    public function setpaymentTypeParams()
+    public function setPaymentTypeDetails()
     {
-        $this->paymentTypeParams = [
-            'store'     => ucfirst($this->paymentBeneficiary),
-            'message'   => "Payment via indomart for order #" . $this->orderDetail->id
-        ];
+        $this->paymentTypeDetails = ["bank" => strtolower($this->paymentBeneficiary)];
 
-        if (strtolower($this->paymentBeneficiary) == 'alfamart') {
-            $this->paymentTypeParams = [
-                "store"                 => ucfirst($this->paymentBeneficiary),
-                "alfamart_free_text_1"  => "Thanks for shopping with us!,",
-                "alfamart_free_text_2"  => "Like us on our Facebook page,",
-                "alfamart_free_text_3"  => "and get 10% discount on your next purchase."
+        if ($this->paymentType == 'echannel') {
+            $this->paymentMethod = $this->paymentType;
+            $this->paymentTypeDetails = [
+                "bill_info1"        => "Payment : " . $this->orderDetail->id,
+                "bill_info2"        => "Online Purchase"
             ];
         }
     }
@@ -134,12 +146,16 @@ class OverTheCounter
     public function requestPaymentDetails() : array
     {
         $data = [
-            "payment_type"          => $this->paymentType,
+            "payment_type"          => $this->paymentMethod,
             "transaction_details"   => $this->transactionDetails,
             "item_details"          => $this->itemDetails,
             "customer_details"      => $this->customerDetails,
-            $this->paymentType      => $this->paymentTypeParams
         ];
+
+        if (isset($this->paymentType) && $this->paymentType)
+        {
+            $data = array_merge($data, [$this->paymentMethod => $this->paymentTypeDetails]);
+        }
         
         return $data;
     }

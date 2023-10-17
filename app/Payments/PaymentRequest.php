@@ -3,8 +3,10 @@
 namespace App\Payments;
 
 use App\Payments\Types\BankTransfer;
+use App\Payments\Types\CardlessCredit;
 use App\Payments\Types\CreditCard;
 use App\Payments\Types\Ewallet;
+use App\Payments\Types\OverTheCounter;
 use stdClass;
 
 class PaymentRequest {
@@ -40,6 +42,16 @@ class PaymentRequest {
 
             case 'EWALLET' :
                 $payment = new Ewallet($this->order);
+                $paymentDetails = $payment->requestPaymentDetails();
+                break;
+
+            case 'OVER_THE_COUNTER' :
+                $payment = new OverTheCounter($this->order);
+                $paymentDetails = $payment->requestPaymentDetails();
+                break;
+
+            case 'CARDLESS_CREDIT' :
+                $payment = new CardlessCredit($this->order);
                 $paymentDetails = $payment->requestPaymentDetails();
                 break;
         }

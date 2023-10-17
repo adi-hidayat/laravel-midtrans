@@ -8,8 +8,9 @@ use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
 use stdClass;
 
-class OverTheCounterTest extends TestCase
+class CardlessCreditTest extends TestCase
 {
+
     private PaymentService $paymentService;
 
     public function setUp() : void
@@ -21,14 +22,14 @@ class OverTheCounterTest extends TestCase
     /**
      * A basic feature test example.
      */
-    public function testOverTheCounterAlfamartSuccess(): void
+    public function testCardlessCreditTestSuccess(): void
     {
-        $order = $this->getOrder('OVER_THE_COUNTER', 'CSTORE', 'ALFAMART');
+        $order = $this->getOrder('CARDLESS_CREDIT', 'AKULAKU', 'AKULAKU');
         $result = $this->paymentService->chargePayment($order);
         $response = $result->json();
-
+        
         $statusCode = 201 == $response['status_code'];
-        $statusMessage = 'Success, cstore transaction is successful' == $response['status_message'];
+        $statusMessage = 'Success, Akulaku transaction is created' == $response['status_message'];
 
         self::assertTrue($statusCode);
         self::assertTrue($statusMessage);

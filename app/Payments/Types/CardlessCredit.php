@@ -2,7 +2,7 @@
 
 namespace App\Payments\Types;
 
-class OverTheCounter
+class CardlessCredit
 {
     /**
      * @var object
@@ -12,12 +12,12 @@ class OverTheCounter
     /**
      * @var string
      */
-    protected string $paymentType; // CONVENIENCE_STORE
+    protected string $paymentType; // CARDLESS_CREDIT
 
     /**
      * @var string
      */
-    protected string $paymentBeneficiary; // INDOMART / ALFAMART
+    protected string $paymentBeneficiary; // AKULAKU / KREDIVO
 
     /**
      * @var array
@@ -35,11 +35,6 @@ class OverTheCounter
     protected array $customerDetails;
 
     /**
-     * @var array
-     */
-    protected array $paymentTypeParams;
-
-    /**
      * @param object $orderDetail
      */
     public function __construct(object $orderDetail)
@@ -51,7 +46,6 @@ class OverTheCounter
         self::setTransactionDetails($this->orderDetail);
         self::setItemDetails($this->orderDetail);
         self::setCustomerDetails($this->orderDetail);
-        self::setpaymentTypeParams($this->orderDetail);
     }
 
     /**
@@ -111,23 +105,6 @@ class OverTheCounter
         ];
     }
 
-    public function setpaymentTypeParams()
-    {
-        $this->paymentTypeParams = [
-            'store'     => ucfirst($this->paymentBeneficiary),
-            'message'   => "Payment via indomart for order #" . $this->orderDetail->id
-        ];
-
-        if (strtolower($this->paymentBeneficiary) == 'alfamart') {
-            $this->paymentTypeParams = [
-                "store"                 => ucfirst($this->paymentBeneficiary),
-                "alfamart_free_text_1"  => "Thanks for shopping with us!,",
-                "alfamart_free_text_2"  => "Like us on our Facebook page,",
-                "alfamart_free_text_3"  => "and get 10% discount on your next purchase."
-            ];
-        }
-    }
-
     /**
      * @return array
      */
@@ -137,8 +114,7 @@ class OverTheCounter
             "payment_type"          => $this->paymentType,
             "transaction_details"   => $this->transactionDetails,
             "item_details"          => $this->itemDetails,
-            "customer_details"      => $this->customerDetails,
-            $this->paymentType      => $this->paymentTypeParams
+            "customer_details"      => $this->customerDetails
         ];
         
         return $data;
