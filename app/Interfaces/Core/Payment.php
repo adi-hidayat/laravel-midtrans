@@ -47,6 +47,13 @@ interface Payment
     public function getCreditCardToken(object $transaction) : object;
 
     /**
+     * @param string $orderIdOrTrransactionId
+     * 
+     * @return object
+     */
+    public function transactionStatus(string $orderIdOrTrransactionId) : object;
+
+    /**
      * @return object
      */
     public function notifyPayment() : object;

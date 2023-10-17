@@ -64,4 +64,34 @@ class PaymentController extends Controller
         }
         
     }
+
+    public function getCreditCardToken(Request $request) : JsonResponse
+    {
+        return response()->json([]);
+    }
+
+    public function capturePayment(Request $request) : JsonResponse
+    {
+        return response()->json([]);
+    }
+
+    public function cancelPayment(Request $request) : JsonResponse
+    {
+        return response()->json([]);
+    }
+
+    public function expirePayment(Request $request) : JsonResponse
+    {
+        return response()->json([]);
+    }
+
+    public function refundPayment(Request $request) : JsonResponse
+    {
+        return response()->json([]);
+    }
+
+    public function notifyPayment(Request $request) : JsonResponse
+    {
+        return response()->json([]);
+    }
 }

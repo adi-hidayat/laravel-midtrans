@@ -49,6 +49,11 @@ class PaymentService implements Payment
     /**
      * @var string
      */
+    private string $statusEndpoint;
+
+    /**
+     * @var string
+     */
     private string $getTokenEndpoint;
 
     /**
@@ -62,6 +67,7 @@ class PaymentService implements Payment
         $this->expireEndpoint   = Config::get('midtrans.endpoints.core.expire'); 
         $this->refundEndpoint   = Config::get('midtrans.endpoints.core.refund'); 
         $this->getTokenEndpoint = Config::get('midtrans.endpoints.core.token');
+        $this->statusEndpoint   = Config::get('midtrans.endpoints.core.status');
     }
     /**
      * @param object $order
@@ -77,7 +83,7 @@ class PaymentService implements Payment
         $paymentRequest = new PaymentRequest($order);
         $payload = $paymentRequest->requestPaymentDetails();
 
-        try {0
+        try {
 
             $response = Http::withBasicAuth($this->serverKey, '')
                             ->withHeader('Content-type', 'application/json')
@@ -214,12 +220,17 @@ class PaymentService implements Payment
     public function refundPayment(object $payment) : object
     {
         $this->refundEndpoint = Str::replace('{transactionId_or_orderId}', $payment->orderId, $this->refundEndpoint);
+        unset($payment->orderId);
+
+        $payload = collect($payment)->mapWithKeys(function ($value, $key) {
+            return [Str::snake($key) => $value];
+        })->all();
 
         try {
 
             $response = Http::withBasicAuth($this->serverKey, '')
                             ->withHeader('accept', 'application/json')
-                            ->post($this->refundEndpoint);
+                            ->post($this->refundEndpoint, $payload);
             
             return $response;
 
@@ -259,6 +270,34 @@ class PaymentService implements Payment
             return $response;
 
         } catch(HttpException $e) {
+            $error = new stdClass;
+            $error->error = true;
+            $error->error_message = $e->getMessage();
+            
+            return $error;
+        }
+    }
+
+    /**
+     * @param string $orderIdOrTrransactionId
+     * 
+     * Get Transaction Status is triggered to obtain the transaction_status and other details of a specific transaction. 
+     * Get Status API can be used by both Snap and Core API integration
+     * https://docs.midtrans.com/reference/get-transaction-status
+     * 
+     * @return object
+     */
+    public function transactionStatus(string $orderIdOrTrransactionId): object
+    {
+        $this->statusEndpoint = Str::replace('{transactionId_or_orderId}', $orderIdOrTrransactionId, $this->statusEndpoint);
+        try {
+            $response = Http::withBasicAuth($this->serverKey, '')
+                            ->withHeader('Content-type', 'application/json')
+                            ->get($this->statusEndpoint);
+
+            return $response;
+        } catch(HttpException $e){
+
             $error = new stdClass;
             $error->error = true;
             $error->error_message = $e->getMessage();

@@ -8,7 +8,8 @@ return [
             'capture'   => env('MIDTRANS_CAPTURE_ENDPOINT'),
             'cancel'    => env('MIDTRANS_CANCEL_ENDPOINT'),
             'expire'    => env('MIDTRANS_EXPIRE_ENDPOINT'),
-            'refund'    => env('MIDTRANS_REFUND_ENDPOINT')
+            'refund'    => env('MIDTRANS_REFUND_ENDPOINT'),
+            'status'    => env('MIDTRANS_STATUS_ENDPOINT')
         ]
     ],
 

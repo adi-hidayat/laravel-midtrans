@@ -3,8 +3,6 @@
 namespace Tests\Feature;
 
 use App\Services\PaymentService;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Support\Facades\Config;
 use stdClass;
 use Tests\TestCase;
@@ -68,7 +66,7 @@ class CreditCardTest extends TestCase
         self::assertTrue($statusMessage);
     }
 
-    public function testCaptureCreditCard()
+    public function testCaptureCreditCard() : void
     {
         $payment = new stdClass;
         $payment->transaction_id = "77d7a5c9-2817-48ce-9b09-387337b84835";
@@ -83,10 +81,51 @@ class CreditCardTest extends TestCase
         self::assertTrue($statusMessage);
     }
 
-    public function testCancelCreditCardSuccess()
+    public function testCancelPaymentCreditCardSuccess()
     {
         $payment = new stdClass;
-        $this->paymentService->cancelPayment($payment);
+        $payment->orderId = 'cbb675a7-6766-415f-8a8d-2fa7c12fad2c';
+        $result = $this->paymentService->cancelPayment($payment);
+        $response = $result->json();
+        
+        $statusCode = 200 == $response['status_code'];
+        $statusMessage = 'Success, transaction is canceled' == $response['status_message'];
+
+        self::assertTrue($statusCode);
+        self::assertTrue($statusMessage);
+
+    }
+
+    public function testRefundPaymentCreditCardSuccess()
+    {
+        $payment = new stdClass;
+        $payment->orderId = '076bb113-0a23-4904-8630-5ad42df5fe27';
+        $payment->refundKey = "REFUND_0001";
+        $payment->amount = 57000000;
+        $payment->reason = "Refund payment";
+        $result = $this->paymentService->refundPayment($payment);
+        $response = $result->json();
+        
+        $statusCode = 200 == $response['status_code'];
+        $statusMessage = 'Success, refund request is approved' == $response['status_message'];
+
+        self::assertTrue($statusCode);
+        self::assertTrue($statusMessage);
+
+    }
+
+    public function testExpirePaymentCreditCardSuccess()
+    {
+        $payment = new stdClass;
+        $payment->orderId = '9efc4f46-a842-4862-9d21-475e122af434';
+        $result = $this->paymentService->expirePayment($payment);
+        $response = $result->json();
+        
+        $statusCode = 200 == $response['status_code'];
+        $statusMessage = 'Success, transaction is expired' == $response['status_message'];
+
+        self::assertTrue($statusCode);
+        self::assertTrue($statusMessage);
     }
 
     /**
@@ -141,20 +180,5 @@ class CreditCardTest extends TestCase
         $order->createdAt = date('Y-m-d H:i:s');
 
         return $order;
-    }
-
-    public function testCancelPaymentCreditCardSuccess()
-    {
-        $payment = new stdClass;
-        $payment->orderId = '78cfea79-f7a6-4c71-a268-649a52afe428';
-        $result = $this->paymentService->cancelPayment($payment);
-        $response = $result->json();
-
-        $statusCode = 200 == $response['status_code'];
-        $statusMessage = 'Success, transaction is canceled' == $response['status_message'];
-
-        self::assertTrue($statusCode);
-        self::assertTrue($statusMessage);
-
     }
 }
