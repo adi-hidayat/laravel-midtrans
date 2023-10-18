@@ -1,4 +1,4 @@
-<?php 
+<?php
 
 namespace App\Services;
 
@@ -62,10 +62,10 @@ class PaymentService implements Payment
     {
         $this->serverKey        = Config::get('midtrans.auth.server_key');
         $this->chargeEndpoint   = Config::get('midtrans.endpoints.core.charge');
-        $this->captureEndpoint  = Config::get('midtrans.endpoints.core.capture'); 
-        $this->cancelEndpoint   = Config::get('midtrans.endpoints.core.cancel'); 
-        $this->expireEndpoint   = Config::get('midtrans.endpoints.core.expire'); 
-        $this->refundEndpoint   = Config::get('midtrans.endpoints.core.refund'); 
+        $this->captureEndpoint  = Config::get('midtrans.endpoints.core.capture');
+        $this->cancelEndpoint   = Config::get('midtrans.endpoints.core.cancel');
+        $this->expireEndpoint   = Config::get('midtrans.endpoints.core.expire');
+        $this->refundEndpoint   = Config::get('midtrans.endpoints.core.refund');
         $this->getTokenEndpoint = Config::get('midtrans.endpoints.core.token');
         $this->statusEndpoint   = Config::get('midtrans.endpoints.core.status');
     }
@@ -82,23 +82,22 @@ class PaymentService implements Payment
     {
         $paymentRequest = new PaymentRequest($order);
         $payload = $paymentRequest->requestPaymentDetails();
-        
+
         try {
 
             $response = Http::withBasicAuth($this->serverKey, '')
-                            ->withHeader('Content-type', 'application/json')
-                            ->post($this->chargeEndpoint, $payload);
+                ->withHeader('Content-type', 'application/json')
+                ->post($this->chargeEndpoint, $payload);
 
-            return $response;
-        
-        } catch (HttpException $e) {
+            return (object) $response->json();
+
+        } catch (HttpException $httpException) {
 
             $error = new stdClass;
-            $error->error = true;
-            $error->error_message = $e->getMessage();
-            
+            $error->status_code = 500;
+            $error->status_message = $httpException->getMessage();
+
             return $error;
-        
         }
     }
 
@@ -117,22 +116,22 @@ class PaymentService implements Payment
         $payload = collect($payment)->mapWithKeys(function ($value, $key) {
             return [Str::snake($key) => $value];
         })->all();
-        
+
         try {
 
             $response = Http::withBasicAuth($this->serverKey, '')
-                            ->withHeader('Content-type', 'application/json')
-                            ->withHeader('accept', 'application/json')
-                            ->post($this->captureEndpoint, $payload);
+                ->withHeader('Content-type', 'application/json')
+                ->withHeader('accept', 'application/json')
+                ->post($this->captureEndpoint, $payload);
 
-            return $response;
+            return (object) $response->json();
 
-        } catch (HttpException $e) {
+        } catch (HttpException $httpException) {
 
             $error = new stdClass;
-            $error->error = true;
-            $error->error_message = $e->getMessage();
-            
+            $error->status_code = 500;
+            $error->status_message = $httpException->getMessage();
+
             return $error;
         }
     }
@@ -149,24 +148,23 @@ class PaymentService implements Payment
      */
     public function cancelPayment(object $payment): object
     {
-        $this->cancelEndpoint = Str::replace('{transactionId_or_orderId}', $payment->orderId, $this->cancelEndpoint);
+        $this->cancelEndpoint = Str::replace('{transactionId_or_orderId}', $payment->transactionId, $this->cancelEndpoint);
 
         try {
 
             $response = Http::withBasicAuth($this->serverKey, '')
-                            ->withHeader('accept', 'application/json')
-                            ->post($this->cancelEndpoint);
-            
-            return $response;
+                ->withHeader('accept', 'application/json')
+                ->post($this->cancelEndpoint);
 
-        } catch (HttpException $e) {
-            
+            return (object) $response->json();
+
+        } catch (HttpException $httpException) {
+
             $error = new stdClass;
-            $error->error = true;
-            $error->error_message = $e->getMessage();
-            
+            $error->status_code = 500;
+            $error->status_message = $httpException->getMessage();
+
             return $error;
-        
         }
     }
 
@@ -182,24 +180,22 @@ class PaymentService implements Payment
      */
     public function expirePayment(object $payment): object
     {
-        $this->expireEndpoint = Str::replace('{transactionId_or_orderId}', $payment->orderId, $this->expireEndpoint);
+        $this->expireEndpoint = Str::replace('{transactionId_or_orderId}', $payment->transactionId, $this->expireEndpoint);
 
         try {
 
             $response = Http::withBasicAuth($this->serverKey, '')
-                            ->withHeader('accept', 'application/json')
-                            ->post($this->expireEndpoint);
-            
-            return $response;
+                ->withHeader('accept', 'application/json')
+                ->post($this->expireEndpoint);
 
+            return (object) $response->json();
         } catch (HttpException $e) {
-            
+
             $error = new stdClass;
-            $error->error = true;
-            $error->error_message = $e->getMessage();
-            
+            $error->status_code = 500;
+            $error->status_message = $e->getMessage();
+
             return $error;
-        
         }
     }
 
@@ -217,10 +213,10 @@ class PaymentService implements Payment
      * 
      * @return object
      */
-    public function refundPayment(object $payment) : object
+    public function refundPayment(object $payment): object
     {
-        $this->refundEndpoint = Str::replace('{transactionId_or_orderId}', $payment->orderId, $this->refundEndpoint);
-        unset($payment->orderId);
+        $this->refundEndpoint = Str::replace('{transactionId_or_orderId}', $payment->transactionId, $this->refundEndpoint);
+        unset($payment->transactionId);
 
         $payload = collect($payment)->mapWithKeys(function ($value, $key) {
             return [Str::snake($key) => $value];
@@ -229,19 +225,19 @@ class PaymentService implements Payment
         try {
 
             $response = Http::withBasicAuth($this->serverKey, '')
-                            ->withHeader('accept', 'application/json')
-                            ->post($this->refundEndpoint, $payload);
-            
-            return $response;
+                ->withHeader('accept', 'application/json')
+                ->post($this->refundEndpoint, $payload);
 
-        } catch (HttpException $e) {
-            
+            return (object) $response->json();
+
+        } catch (HttpException $httpException) {
+
             $error = new stdClass;
-            $error->error = true;
-            $error->error_message = $e->getMessage();
-            
+            $error->status_code = 500;
+            $error->status_message = $httpException->getMessage();
+
             return $error;
-        
+
         }
     }
 
@@ -262,18 +258,20 @@ class PaymentService implements Payment
         })->all();
 
         try {
-            $response = Http::withBasicAuth($this->serverKey, '')
-                            ->withHeader('Conten-type', 'application/json')
-                            ->withQueryParameters($queryParameters)
-                            ->get($this->getTokenEndpoint);
-            
-            return $response;
 
-        } catch(HttpException $e) {
-            $error = new stdClass;
-            $error->error = true;
-            $error->error_message = $e->getMessage();
+            $response = Http::withBasicAuth($this->serverKey, '')
+                ->withHeader('Conten-type', 'application/json')
+                ->withQueryParameters($queryParameters)
+                ->get($this->getTokenEndpoint);
+
+            return (object) $response->json();
             
+        } catch (HttpException $httpException) {
+
+            $error = new stdClass;
+            $error->status_code = 500;
+            $error->status_message = $httpException->getMessage();
+
             return $error;
         }
     }
@@ -291,17 +289,19 @@ class PaymentService implements Payment
     {
         $this->statusEndpoint = Str::replace('{transactionId_or_orderId}', $orderIdOrTrransactionId, $this->statusEndpoint);
         try {
+            
             $response = Http::withBasicAuth($this->serverKey, '')
-                            ->withHeader('Content-type', 'application/json')
-                            ->get($this->statusEndpoint);
+                ->withHeader('Content-type', 'application/json')
+                ->get($this->statusEndpoint);
 
-            return $response;
-        } catch(HttpException $e){
+            return (object) $response->json();
+
+        } catch (HttpException $httpException) {
 
             $error = new stdClass;
-            $error->error = true;
-            $error->error_message = $e->getMessage();
-            
+            $error->status_code = 500;
+            $error->status_message = $httpException->getMessage();
+
             return $error;
         }
     }

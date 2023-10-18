@@ -2,9 +2,11 @@
 
 return [
     'auth' => [
-        'merchant_id'   => env('MIDTRANS_MERCHANT_ID'),
-        'client_key'    => env('MIDTRANS_CLIENT_KEY'),
-        'server_key'    => env('MIDTRANS_SERVER_KEY')
+        'merchant_id'       => env('MIDTRANS_MERCHANT_ID'),
+        'client_key'        => env('MIDTRANS_CLIENT_KEY'),
+        'server_key'        => env('MIDTRANS_SERVER_KEY'),
+        'secured_request'   => false,
+        'x_payment_token'   => env('X_PAYMENT_TOKEN') // set token if secured request is true
     ],
     'endpoints' => [
         'core' => [

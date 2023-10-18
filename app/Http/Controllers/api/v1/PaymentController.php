@@ -7,6 +7,7 @@ use App\Services\PaymentService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
+use stdClass;
 
 class PaymentController extends Controller
 {
@@ -25,6 +26,7 @@ class PaymentController extends Controller
     public function chargePayment(Request $request) : JsonResponse
     {
         try {
+
             $rules = [
                 'id'                    => 'required',
                 'total'                 => 'required|numeric',
@@ -38,58 +40,238 @@ class PaymentController extends Controller
                 'customer.lastName'     => 'required',
                 'customer.email'        => 'required|email',
                 'customer.phoneNumber'  => 'required',
-                'paymentMethod'         => 'required',
-                'paymentBeneficiary'    => 'required',
-                'paymentType'           => 'required',
+                'paymentMethod'         => 'required'
+                
             ];
+
+            if ($request->paymentMethod == 'BANK_TRANSFER') {
+                $rules = array_merge($rules, [
+                    'paymentBeneficiary'    => 'required',
+                    'paymentType'           => 'required'
+                ]);
+            }
+
+            if ($request->paymentMethod == 'CREDIT_CARD') {
+                $rules = array_merge($rules, [
+                    'tokenId'    => 'required'
+                ]);
+            }
 
             $payload = $request->validate($rules);
     
             $payload = json_decode($request->getContent());
             
-            $result = $this->paymentService->chargePayment($payload);
+            $response = $this->paymentService->chargePayment($payload);
             
-            if (isset($result->error)) {
-                $response = $result;
-            } else {
-                $response = $result->json();
-            }
-
-            return response()->json($response);
+            return response()->json($response, $response->status_code);
 
         } catch (ValidationException $validationException) {
 
-            return response()->json($validationException, 401);
+            $response = new stdClass;
+            $response->status_code = 400;
+            $response->status_message = $validationException->getMessage();
+
+            return response()->json($response, $response->status_code);
         
         }
         
     }
 
+    /**
+     * @param Request $request
+     * 
+     * @return JsonResponse
+     */
     public function getCreditCardToken(Request $request) : JsonResponse
     {
-        return response()->json([]);
+        try {
+            $rules = [
+                'cardNumber'       => 'required|numeric',
+                'cardCvv'          => 'required|numeric',
+                'cardExpMonth'    => 'required|numeric',
+                'cardExpYear'     => 'required|numeric'
+            ];
+
+            $payload = $request->validate($rules);
+
+            $payload = json_decode($request->getContent());
+
+            $response = $this->paymentService->getCreditCardToken($payload);
+            
+            return response()->json($response, $response->status_code);
+
+        } catch (ValidationException $validationException) {
+            
+            $response = new stdClass;
+            $response->status_code = 400;
+            $response->status_message = $validationException->getMessage();
+
+            return response()->json($response, $response->status_code);
+        
+        }
     }
 
+    /**
+     * @param Request $request
+     * 
+     * @return JsonResponse
+     */
     public function capturePayment(Request $request) : JsonResponse
     {
-        return response()->json([]);
+        try {
+
+            $rules = [ 
+                'transactionId' => 'required',
+                'grossAmount'   => 'required|numeric'
+            ];
+
+            $payload = $request->validate($rules);
+
+            $payload = json_decode($request->getContent());
+
+            $response = $this->paymentService->capturePayment($payload);
+
+            return response()->json($response, $response->status_code);
+        
+        } catch (ValidationException $validationException) {
+
+            $response = new stdClass;
+            $response->status_code = 400;
+            $response->status_message = $validationException->getMessage();
+
+            return response()->json($response, $response->status_code);
+        
+        }
+
     }
 
+    /**
+     * @param Request $request
+     * 
+     * @return JsonResponse
+     */
     public function cancelPayment(Request $request) : JsonResponse
     {
-        return response()->json([]);
+        try {
+
+            $rules = [ 
+                'transactionId' => 'required',
+            ];
+
+            $payload = $request->validate($rules);
+
+            $payload = json_decode($request->getContent());
+
+            $response = $this->paymentService->cancelPayment($payload);
+
+            return response()->json($response, $response->status_code);
+        
+        } catch (ValidationException $validationException) {
+
+            $response = new stdClass;
+            $response->status_code = 400;
+            $response->status_message = $validationException->getMessage();
+
+            return response()->json($response, $response->status_code);
+        
+        }
     }
 
+    /**
+     * @param Request $request
+     * 
+     * @return JsonResponse
+     */
     public function expirePayment(Request $request) : JsonResponse
     {
-        return response()->json([]);
+        try {
+
+            $rules = [ 
+                'transactionId' => 'required',
+            ];
+
+            $payload = $request->validate($rules);
+
+            $payload = json_decode($request->getContent());
+
+            $response = $this->paymentService->expirePayment($payload);
+
+            return response()->json($response, $response->status_code);
+        
+        } catch (ValidationException $validationException) {
+
+            $response = new stdClass;
+            $response->status_code = 400;
+            $response->status_message = $validationException->getMessage();
+
+            return response()->json($response, $response->status_code);
+        
+        }
     }
 
+    /**
+     * @param Request $request
+     * 
+     * @return JsonResponse
+     */
     public function refundPayment(Request $request) : JsonResponse
     {
-        return response()->json([]);
+        try {
+
+            $rules = [ 
+                'transactionId' => 'required',
+                'grossAmount'   => 'required|numeric'
+            ];
+
+            $payload = $request->validate($rules);
+
+            $payload = json_decode($request->getContent());
+
+            $response = $this->paymentService->refundPayment($payload);
+
+            return response()->json($response, $response->status_code);
+        
+        } catch (ValidationException $validationException) {
+
+            $response = new stdClass;
+            $response->status_code = 400;
+            $response->status_message = $validationException->getMessage();
+
+            return response()->json($response, $response->status_code);
+        
+        }
     }
 
+    public function transactionStatus(Request $request)
+    {
+        try {
+
+            $rules = [ 
+                'orderIdOrTransactionId' => 'required'
+            ];
+
+            $request->validate($rules);
+            
+            $response = $this->paymentService->transactionStatus($request->get('orderIdOrTransactionId'));
+
+            return response()->json($response, $response->status_code);
+        
+        } catch (ValidationException $validationException) {
+
+            $response = new stdClass;
+            $response->status_code = 400;
+            $response->status_message = $validationException->getMessage();
+
+            return response()->json($response, $response->status_code);
+        
+        }
+    }
+
+    /**
+     * @param Request $request
+     * 
+     * @return JsonResponse
+     */
     public function notifyPayment(Request $request) : JsonResponse
     {
         return response()->json([]);
