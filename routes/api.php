@@ -11,5 +11,7 @@ Route::middleware([PaymentServiceMiddleware::class])->prefix('/v1/payment')->gro
     Route::post('/cancel', [PaymentController::class, 'cancelPayment']);
     Route::post('/refund', [PaymentController::class, 'refundPayment']);
     Route::get('/status', [PaymentController::class, 'transactionStatus']);
-    Route::post('/nofity', [PaymentController::class, 'notifyPayment']);
+    
 });
+
+Route::post('/v1/nofity', [PaymentController::class, 'notifyPayment']);

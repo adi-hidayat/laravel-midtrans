@@ -26,10 +26,9 @@ class CardlessCreditTest extends TestCase
     {
         $order = $this->getOrder('CARDLESS_CREDIT', 'AKULAKU', 'AKULAKU');
         $result = $this->paymentService->chargePayment($order);
-        $response = $result->json();
         
-        $statusCode = 201 == $response['status_code'];
-        $statusMessage = 'Success, Akulaku transaction is created' == $response['status_message'];
+        $statusCode = 201 == $result->status_code;
+        $statusMessage = 'Success, Akulaku transaction is created' == $result->status_message;
 
         self::assertTrue($statusCode);
         self::assertTrue($statusMessage);
@@ -74,7 +73,7 @@ class CardlessCreditTest extends TestCase
         $customer = new stdClass;
         $customer->firstName        = "Adi";
         $customer->lastName         = "Hidayat";
-        $customer->email            = "adihidayat.lpg@gmail.com";
+        $customer->email            = "john@example.com";
         $customer->phoneNumber      = "0858410678625";
         $order->customer            = $customer;
 

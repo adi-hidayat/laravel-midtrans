@@ -25,10 +25,9 @@ class OverTheCounterTest extends TestCase
     {
         $order = $this->getOrder('OVER_THE_COUNTER', 'CSTORE', 'ALFAMART');
         $result = $this->paymentService->chargePayment($order);
-        $response = $result->json();
 
-        $statusCode = 201 == $response['status_code'];
-        $statusMessage = 'Success, cstore transaction is successful' == $response['status_message'];
+        $statusCode = 201 == $result->status_code;
+        $statusMessage = 'Success, cstore transaction is successful' == $result->status_message;
 
         self::assertTrue($statusCode);
         self::assertTrue($statusMessage);
@@ -73,7 +72,7 @@ class OverTheCounterTest extends TestCase
         $customer = new stdClass;
         $customer->firstName        = "Adi";
         $customer->lastName         = "Hidayat";
-        $customer->email            = "adihidayat.lpg@gmail.com";
+        $customer->email            = "john@example.com";
         $customer->phoneNumber      = "0858410678625";
         $order->customer            = $customer;
 

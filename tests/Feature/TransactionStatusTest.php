@@ -24,9 +24,8 @@ class TransactionStatusTest extends TestCase
     public function testTransactionStatus(): void
     {
         $result = $this->paymentService->transactionStatus('cc7e6d37-50a3-4b86-b270-a0c8de8e9e2f');
-        $response = $result->json();
         
-        $statusCode = 200 == $response['status_code'];
+        $statusCode = 200 == $result->status_code;
         self::assertTrue($statusCode);
     }
 }

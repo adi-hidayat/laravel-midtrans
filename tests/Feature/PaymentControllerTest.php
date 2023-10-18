@@ -48,7 +48,7 @@ class PaymentControllerTest extends TestCase
             "customer": {
                 "firstName": "Adi",
                 "lastName": "Hidayat",
-                "email": "adihidayat.lpg@gmail.com",
+                "email": "john@example.com",
                 "phoneNumber": "0858410678625"
             },
             "paymentMethod": "' . $paymentMethod . '",

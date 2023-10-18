@@ -4,8 +4,10 @@ namespace App\Services;
 
 use App\Payments\PaymentRequest;
 use App\Interfaces\Core\Payment;
+use App\Interfaces\Snap\Payment as SnapPayment;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use stdClass;
@@ -14,7 +16,7 @@ use stdClass;
  * Handle bank transfer transaction
  * with Virtual account & echannel
  */
-class PaymentService implements Payment
+class PaymentService implements Payment, SnapPayment
 {
     /**
      * @var string
@@ -56,6 +58,8 @@ class PaymentService implements Payment
      */
     private string $getTokenEndpoint;
 
+    private string $snapEndpoint;
+
     /**
      */
     public function __construct()
@@ -68,6 +72,7 @@ class PaymentService implements Payment
         $this->refundEndpoint   = Config::get('midtrans.endpoints.core.refund');
         $this->getTokenEndpoint = Config::get('midtrans.endpoints.core.token');
         $this->statusEndpoint   = Config::get('midtrans.endpoints.core.status');
+        $this->snapEndpoint     = Config::get('midtrans.endpoints.snap.transaction');
     }
     /**
      * @param object $order
@@ -307,13 +312,49 @@ class PaymentService implements Payment
     }
 
     /**
+     * @param object $order
+     * 
+     * Snap allows merchant to easily integrate to Midtrans payment system to start accepting payments.
+     * https://docs.midtrans.com/docs/snap
+     * 
+     * @return object
+     */
+    public function snapTransaction(object $order) : object
+    {
+        $paymentRequest = new PaymentRequest($order);
+        $payload = $paymentRequest->requestPaymentDetails();
+
+        try {
+
+            $response = Http::withBasicAuth($this->serverKey, '')
+                ->withHeader('Content-type', 'application/json')
+                ->post($this->snapEndpoint, $payload);
+
+            return (object) $response->json();
+
+        } catch (HttpException $httpException) {
+
+            $error = new stdClass;
+            $error->status_code = 500;
+            $error->status_message = $httpException->getMessage();
+
+            return $error;
+        }
+    }
+
+    /**
      * 
      * Handle notification after payment from midtrans
      * 
      * @return object
      */
-    public function notifyPayment(): object
+    public function notifyPayment(object $paymentInfo): object
     {
+        
+        // do something if midtrans send information about payment status
+        $log = Log::channel('payment_notify');
+        $log->info('Transaction ID : ' . $paymentInfo->transaction_id, ["Transaction" => $paymentInfo]);
+
         return new stdClass;
     }
 }

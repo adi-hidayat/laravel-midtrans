@@ -19,7 +19,7 @@ return [
             'status'    => env('MIDTRANS_STATUS_ENDPOINT')
         ],
         'snap' => [
-
+            'transaction' => env('MIDTRANS_SNAP_ENDPOINT')
         ]
     ],
     'payment_methods' => [

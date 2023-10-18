@@ -7,8 +7,6 @@ use Illuminate\Support\Facades\Config;
 use stdClass;
 use Tests\TestCase;
 
-use function PHPUnit\Framework\assertTrue;
-
 class CreditCardTest extends TestCase
 {
     private PaymentService $paymentService;
@@ -33,9 +31,9 @@ class CreditCardTest extends TestCase
 
         $result = $this->paymentService->getCreditCardToken($creditCard);
 
-        self::assertArrayHasKey('status_code', $result->json());
-        self::assertArrayHasKey('token_id', $result->json());
-        self::assertArrayHasKey('hash', $result->json());
+        self::assertObjectHasProperty('status_code', $result);
+        self::assertObjectHasProperty('token_id', $result);
+        self::assertObjectHasProperty('hash', $result);
     }
 
     public function testChargeCreditCardSuccess()
@@ -50,17 +48,14 @@ class CreditCardTest extends TestCase
 
         $result = $this->paymentService->getCreditCardToken($creditCard);
 
-        $response = $result->json();
+        self::assertObjectHasProperty('status_code', $result);
+        self::assertObjectHasProperty('token_id', $result);
 
-        self::assertArrayHasKey('status_code', $response);
-        self::assertArrayHasKey('token_id', $response);
-
-        $order = $this->getOrder('CREDIT_CARD', $response['token_id']);
+        $order = $this->getOrder('CREDIT_CARD', $result->token_id);
         $result = $this->paymentService->chargePayment($order);
-        $response = $result->json();
         
-        $statusCode = 200 == $response['status_code'];
-        $statusMessage = 'Success, Credit Card transaction is successful' == $response['status_message'];
+        $statusCode = 200 == $result->status_code;
+        $statusMessage = 'Success, Credit Card transaction is successful' == $result->status_message;
 
         self::assertTrue($statusCode);
         self::assertTrue($statusMessage);
@@ -72,10 +67,9 @@ class CreditCardTest extends TestCase
         $payment->transaction_id = "77d7a5c9-2817-48ce-9b09-387337b84835";
         $payment->gross_amount = 57000000;
         $result = $this->paymentService->capturePayment($payment);
-        $response = $result->json();
 
-        $statusCode = 200 == $response['status_code'];
-        $statusMessage = 'Success, Credit Card capture transaction is successful' == $response['status_message'];
+        $statusCode = 200 == $result->status_code;
+        $statusMessage = 'Success, Credit Card capture transaction is successful' == $result->status_message;
 
         self::assertTrue($statusCode);
         self::assertTrue($statusMessage);
@@ -86,10 +80,9 @@ class CreditCardTest extends TestCase
         $payment = new stdClass;
         $payment->orderId = 'cbb675a7-6766-415f-8a8d-2fa7c12fad2c';
         $result = $this->paymentService->cancelPayment($payment);
-        $response = $result->json();
         
-        $statusCode = 200 == $response['status_code'];
-        $statusMessage = 'Success, transaction is canceled' == $response['status_message'];
+        $statusCode = 200 == $result->status_code;
+        $statusMessage = 'Success, transaction is canceled' == $result->status_message;
 
         self::assertTrue($statusCode);
         self::assertTrue($statusMessage);
@@ -104,10 +97,9 @@ class CreditCardTest extends TestCase
         $payment->amount = 57000000;
         $payment->reason = "Refund payment";
         $result = $this->paymentService->refundPayment($payment);
-        $response = $result->json();
         
-        $statusCode = 200 == $response['status_code'];
-        $statusMessage = 'Success, refund request is approved' == $response['status_message'];
+        $statusCode = 200 == $result->status_code;
+        $statusMessage = 'Success, refund request is approved' == $result->status_message;
 
         self::assertTrue($statusCode);
         self::assertTrue($statusMessage);
@@ -121,8 +113,8 @@ class CreditCardTest extends TestCase
         $result = $this->paymentService->expirePayment($payment);
         $response = $result->json();
         
-        $statusCode = 200 == $response['status_code'];
-        $statusMessage = 'Success, transaction is expired' == $response['status_message'];
+        $statusCode = 200 == $result->status_code;
+        $statusMessage = 'Success, transaction is expired' == $result->status_message;
 
         self::assertTrue($statusCode);
         self::assertTrue($statusMessage);
@@ -166,7 +158,7 @@ class CreditCardTest extends TestCase
         $customer = new stdClass;
         $customer->firstName        = "Adi";
         $customer->lastName         = "Hidayat";
-        $customer->email            = "adihidayat.lpg@gmail.com";
+        $customer->email            = "john@example.com";
         $customer->phoneNumber      = "0858410678625";
         $order->customer            = $customer;
 

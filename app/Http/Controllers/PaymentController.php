@@ -1,28 +1,26 @@
 <?php
 
-namespace Tests\Feature;
+namespace App\Http\Controllers;
 
 use App\Services\PaymentService;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Foundation\Testing\WithFaker;
-use Tests\TestCase;
+use Illuminate\Http\Request;
 use stdClass;
 
-class EwalletTest extends TestCase
+class PaymentController extends Controller
 {
+
     private PaymentService $paymentService;
 
-    public function setUp() : void
+    public function __construct(PaymentService $paymentService)
     {
-        parent::setUp();
-        $this->paymentService = $this->app->make(PaymentService::class);
+        $this->paymentService = $paymentService;
     }
-    /**
-     * A basic feature test example.
-     */
-    public function testLoadPaymentServiceEwallet(): void
+    
+    public function snapTransaction()
     {
-        self::assertTrue(true);
+        $response = $this->paymentService->snapTransaction($this->getOrder());
+       
+        return redirect($response->redirect_url);
     }
 
     /**
@@ -32,7 +30,7 @@ class EwalletTest extends TestCase
      * 
      * @return object
      */
-    public function getOrder($paymentMethod, $paymentType = null, $paymentBeneficiary = null) : object
+    public function getOrder() : object
     {
         // init object order
         $order = new stdClass;
@@ -64,32 +62,17 @@ class EwalletTest extends TestCase
         $customer->firstName        = "Adi";
         $customer->lastName         = "Hidayat";
         $customer->email            = "john@example.com";
-        $customer->phoneNumber      = "0858410678625";
+        $customer->phoneNumber      = "123123123123";
         $order->customer            = $customer;
 
         // payment method
-        $order->paymentMethod       = $paymentMethod;
-        $order->paymentBeneficiary  = $paymentBeneficiary;
-        $order->paymentType         = $paymentType;
+        $order->paymentMethod       = 'ONLINE_PAYMENT';
+        $order->paymentBeneficiary  = 'MIDTRANS'; // optional
+        $order->paymentType         = 'SNAP'; // something to flagged payment and this is optional
 
         // date
         $order->createdAt = date('Y-m-d H:i:s');
 
         return $order;
-    }
-
-    /**
-     * @return void
-     */
-    public function testEwalletSuccess() : void
-    {
-        
-        $result = $this->paymentService->chargePayment($this->getOrder('EWALLET', 'GOPAY', 'GOPAY'));
-        
-        $statusCodeSuccess = 201 == $result->status_code;
-        self::assertTrue($statusCodeSuccess);
-
-        $messageMessage = 'GoPay transaction is created' == $result->status_message;
-        self::assertTrue($messageMessage);
     }
 }

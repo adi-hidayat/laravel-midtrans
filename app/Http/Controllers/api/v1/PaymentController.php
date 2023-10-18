@@ -57,7 +57,11 @@ class PaymentController extends Controller
                 ]);
             }
 
-            $payload = $request->validate($rules);
+            IF ($request->paymentMethod == 'OVER_THE_COUNTER') {
+
+            }
+
+            $request->validate($rules);
     
             $payload = json_decode($request->getContent());
             
@@ -92,7 +96,7 @@ class PaymentController extends Controller
                 'cardExpYear'     => 'required|numeric'
             ];
 
-            $payload = $request->validate($rules);
+            $request->validate($rules);
 
             $payload = json_decode($request->getContent());
 
@@ -125,7 +129,7 @@ class PaymentController extends Controller
                 'grossAmount'   => 'required|numeric'
             ];
 
-            $payload = $request->validate($rules);
+            $request->validate($rules);
 
             $payload = json_decode($request->getContent());
 
@@ -158,7 +162,7 @@ class PaymentController extends Controller
                 'transactionId' => 'required',
             ];
 
-            $payload = $request->validate($rules);
+            $request->validate($rules);
 
             $payload = json_decode($request->getContent());
 
@@ -190,7 +194,7 @@ class PaymentController extends Controller
                 'transactionId' => 'required',
             ];
 
-            $payload = $request->validate($rules);
+            $request->validate($rules);
 
             $payload = json_decode($request->getContent());
 
@@ -223,7 +227,7 @@ class PaymentController extends Controller
                 'grossAmount'   => 'required|numeric'
             ];
 
-            $payload = $request->validate($rules);
+            $request->validate($rules);
 
             $payload = json_decode($request->getContent());
 
@@ -274,6 +278,18 @@ class PaymentController extends Controller
      */
     public function notifyPayment(Request $request) : JsonResponse
     {
-        return response()->json([]);
+        try {
+            
+            $paymentInfo = (object) json_decode($request->getContent());
+            
+            $this->paymentService->notifyPayment($paymentInfo);
+
+            return response()->json("OK", 200);
+        
+        } catch (ValidationException $validationException) {
+
+            return response()->json("NOT OK", 500);
+        
+        }
     }
 }

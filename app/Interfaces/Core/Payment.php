@@ -56,5 +56,5 @@ interface Payment
     /**
      * @return object
      */
-    public function notifyPayment() : object;
+    public function notifyPayment(object $payment) : object;
 }

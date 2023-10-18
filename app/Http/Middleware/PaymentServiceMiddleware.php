@@ -33,8 +33,8 @@ class PaymentServiceMiddleware
         }
 
         // save log into payment_request.log
-        $slackLogger = Log::channel('file');
-        $slackLogger->info('Request For Payment', ["Transaction" => $request->getContent()]);
+        $log = Log::channel('payment_request');
+        $log->info('Request For Payment', ["Transaction" => $request->getContent()]);
 
         return $next($request);
     }

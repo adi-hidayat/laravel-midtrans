@@ -35,12 +35,11 @@ class BankTransferTest extends TestCase
     {
         
         $result = $this->paymentService->chargePayment($this->getOrder('BANK_TRANSFER', 'VIRTUAL_ACCOUNT', 'BCA'));
-        $result = $result->json();
 
-        $statusCodeSuccess = 201 == $result['status_code'];
+        $statusCodeSuccess = 201 == $result->status_code;
         assertTrue($statusCodeSuccess);
 
-        $messageMessage = 'Success, Bank Transfer transaction is created' == $result['status_message'];
+        $messageMessage = 'Success, Bank Transfer transaction is created' == $result->status_message;
         assertTrue($messageMessage);
     }
 
@@ -50,12 +49,11 @@ class BankTransferTest extends TestCase
     public function testEchannelSuccess() : void
     {
         $result = $this->paymentService->chargePayment($this->getOrder('BANK_TRANSFER', 'ECHANNEL', 'MANDIRI'));
-        $result = $result->json();
         
-        $statusCodeSuccess = 201 == $result['status_code'];
+        $statusCodeSuccess = 201 == $result->status_code;
         assertTrue($statusCodeSuccess);
 
-        $messageMessage = 'OK, Mandiri Bill transaction is successful' == $result['status_message'];
+        $messageMessage = 'OK, Mandiri Bill transaction is successful' == $result->status_message;
         assertTrue($messageMessage);
     }
 
@@ -67,10 +65,10 @@ class BankTransferTest extends TestCase
         $result = $this->paymentService->chargePayment($this->getOrder('BANK_TRANSFER'));
         $result = $result->json();
 
-        $statusCodeSuccess = 201 == $result['status_code'];
+        $statusCodeSuccess = 201 == $result->status_code;
         assertTrue($statusCodeSuccess);
 
-        $messageMessage = 'Success, PERMATA VA transaction is successful' == $result['status_message'];
+        $messageMessage = 'Success, PERMATA VA transaction is successful' == $result->status_message;
         assertTrue($messageMessage);
     }
 
@@ -112,7 +110,7 @@ class BankTransferTest extends TestCase
         $customer = new stdClass;
         $customer->firstName        = "Adi";
         $customer->lastName         = "Hidayat";
-        $customer->email            = "adihidayat.lpg@gmail.com";
+        $customer->email            = "john@example.com";
         $customer->phoneNumber      = "0858410678625";
         $order->customer            = $customer;
 
